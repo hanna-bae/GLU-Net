@@ -2,15 +2,15 @@ import argparse
 import torch
 import torch.nn as nn
 import torchvision
-import coremltools as ct 
-import onnx
-from onnx_coreml import convert
-from model.net import DGCNet 
+# import coremltools as ct 
+# import onnx
+# from onnx_coreml import convert
+from models.models_compared import GLU_Net
 
 
 def parse():
     parser = argparse.ArgumentParser(description='Transform Toolbox')
-    parser.add_argument('--model', metavar='ARCH', default='DGCNet')
+    parser.add_argument('--model', metavar='ARCH', default='GLU_Net')
     parser.add_argument('--ckpt', type=str, metavar='PATH', help='path to checkpoint')
     parser.add_argument('--onnx', action='store_true', default=False, help='export onnx')
     parser.add_argument('--coreml', action='store_true', default=False, help='export coreml')
@@ -19,7 +19,7 @@ def parse():
 
 if __name__ == '__main__':
     args = parse()
-    model = DGCNet()
+    model = GLU_Net(path_pre_trained_models=args.ckpt, model_type='DPED_CityScape_ADE', consensus_network=False, cyclic_consistency=True, iterative_refinement=True, apply_flipping_condition=False)
 
     # model initialized with pretrained checkpoint 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -38,10 +38,10 @@ if __name__ == '__main__':
         torch.onnx.export(model, (dummy_input1,dummy_input2), args.model+'.onnx', verbose=False )
         print('successfully export onnx')
     
-    if args.coreml:
-        example_input =  [dummy_input1, dummy_input2]
-        onnx_model = onnx.load(args.model+'.onnx')
-        coreml_model = convert(onnx_model, example_input)
-        coreml_model.save(args.model+'.mlmodel')
-        print('successfully export coreml')
+    # if args.coreml:
+    #     example_input =  [dummy_input1, dummy_input2]
+    #     onnx_model = onnx.load(args.model+'.onnx')
+    #     coreml_model = convert(onnx_model, example_input)
+    #     coreml_model.save(args.model+'.mlmodel')
+    #     print('successfully export coreml')
     
